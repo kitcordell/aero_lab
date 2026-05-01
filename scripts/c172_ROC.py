@@ -54,12 +54,12 @@ poh_roc_M20C = roc_poh["fpm_M20C"]
 poh_roc_20C = roc_poh["fpm_20C"]
 poh_roc_40C = roc_poh["fpm_40C"]
 
-
+# Plot POH ROC vs Simulated ROC
 plt.figure(1)
 plt.plot(poh_roc_alt, poh_roc_20C, label="POH ROC", linewidth=1)
 plt.plot(alt_array, ROC_alt_array*60,label="Sim ROC", linewidth=1)
 
-plt.title("Rate of Climb vs Altitude")
+plt.title("Rate of Climb vs Altitude @ 20C")
 plt.xlabel("Altitude (ft)")
 plt.ylabel("Rate of Climb (ft/min)")
 plt.legend()
@@ -68,7 +68,7 @@ plt.grid()
 
 
 plt.figure(2)
-plt.plot(V_array, ROC_array*60, label="Rate of Climb (ft/s)", linewidth=1)
+plt.plot(V_array, ROC_array*60, label="Rate of Climb (ft/min)", linewidth=1)
 plt.plot(V_max_ROC, ROC_max*60, 'ro', label="Max ROC", linewidth=1)
 plt.title("Rate of Climb vs Airspeed")
 plt.xlabel("Airspeed (ft/min)")
