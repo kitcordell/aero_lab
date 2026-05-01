@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from scipy.optimize import least_squares
 from models.aero_model import drag_coefficient
 from models.thrust_model import power_available
+from utils import conversions
 from utils.standard_atmosphere import standard_atmosphere
 # Drag Polar Function
 
@@ -15,14 +16,13 @@ def drag_polar(alt_0, params,):
     h = 0.01
     C_D_0 = params["C_D_0"]
     e = params["e"]
-    
-    V_S = params["V_S"]
-    V_ne = params["V_ne"]
     W = params["W"]
     S = params["S"]
     AR = params["AR"]
 
-    rho, _, _ = standard_atmosphere(alt_0)
+    rho, T, _ = standard_atmosphere(alt_0)
+    V_S = conversions.ias2tas(conversions.kts2fps(params["V_S"]), alt_0, T)
+    V_ne = conversions.ias2tas(conversions.kts2fps(params["V_ne"]), alt_0, T)
     N = int(np.round((V_ne - V_S) / h))
     V = np.linspace(V_S, V_ne, N)
 
@@ -84,4 +84,3 @@ def velocity_max(alt, throttle, params, x0):
     return sol.x[0]
 
 from aircraft.c172_params import params
-

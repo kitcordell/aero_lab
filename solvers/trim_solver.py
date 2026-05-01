@@ -2,9 +2,11 @@
 #%%
 import numpy as np
 from scipy.optimize import least_squares
-from aircraft.c172_params import params, alt_0
+from aircraft.c172_params import params
 from models.aircraft_longitudinal_dynamics import aircraft_longitudinal_dynamics
 from utils.axis_transformations import body_to_velocity, velocity_to_body
+from utils import conversions
+from utils.standard_atmosphere import standard_atmosphere
 
 
 #%%
@@ -113,7 +115,7 @@ def climb_trim_residuals(unknown, trim_target):
 
 # x0 = [theta_guess, delta_e_guess, gamma_guess]
 # trim_target = [throttle, V, alt]
-def climb_trim_at_speed(x0, trim_target):
+def climb_trim_at_speed(x0, trim_target, verbose=True):
     throttle_trim, V_trim, alt_trim = trim_target
 
     sol = least_squares(
@@ -132,28 +134,56 @@ def climb_trim_at_speed(x0, trim_target):
     ROC_fps = V_trim * np.sin(gamma_trim)
     ROC_fpm = ROC_fps * 60.0
 
-    print("\nTrim Target:")
-    print("Throttle:", throttle_trim * 100, "[%]")
-    print("Velocity:", V_trim, "[ft/s]")
-    print("Altitude:", alt_trim, "[ft]")
+    if verbose:
+        print("\nTrim Target:")
+        print("Throttle:", throttle_trim * 100, "[%]")
+        print("Velocity:", V_trim, "[ft/s]")
+        print("Altitude:", alt_trim, "[ft]")
 
-    print("\nTrim Solution:")
-    print("Theta:", theta_trim, "[rad]")
-    print("Elevator Deflection:", delta_e_trim, "[rad]")
-    print("Flight Path Angle:", gamma_trim, "[rad]")
+        print("\nTrim Solution:")
+        print("Theta:", theta_trim, "[rad]")
+        print("Elevator Deflection:", delta_e_trim, "[rad]")
+        print("Flight Path Angle:", gamma_trim, "[rad]")
 
-    print("\nTrimmed State:")
-    print("Forward Body Velocity (U):", U_trim, "[ft/s]")
-    print("Vertical Body Velocity (W):", W_trim, "[ft/s]")
-    print("Pitch Rate (Q):", Q_trim, "[rad/s]")
-    print("Body Angle (theta):", theta_state, "[rad]")
-    print("Altitude:", alt_state, "[ft]")
+        print("\nTrimmed State:")
+        print("Forward Body Velocity (U):", U_trim, "[ft/s]")
+        print("Vertical Body Velocity (W):", W_trim, "[ft/s]")
+        print("Pitch Rate (Q):", Q_trim, "[rad/s]")
+        print("Body Angle (theta):", theta_state, "[rad]")
+        print("Altitude:", alt_state, "[ft]")
 
-    print("\nClimb Performance:")
-    print("ROC:", ROC_fps, "[ft/s]")
-    print("ROC:", ROC_fpm, "[ft/min]")
+        print("\nClimb Performance:")
+        print("ROC:", ROC_fps, "[ft/s]")
+        print("ROC:", ROC_fpm, "[ft/min]")
 
     return x, u, gamma_trim, ROC_fps, ROC_fpm, sol
+
+def max_ROC(x0, trim_target, params, num_points=50, verbose=True):
+    throttle, _, alt = trim_target
+    _, T, _ = standard_atmosphere(alt)
+
+    # Convert IAS performance limits to TAS at the current altitude.
+    V_ne = conversions.ias2tas(conversions.kts2fps(params["V_ne"]), alt, T)
+    V_S = conversions.ias2tas(conversions.kts2fps(params["V_S"]), alt, T)
+    V_array = np.linspace(V_S, V_ne, num_points)
+
+    ROC_array = np.zeros_like(V_array)
+
+    for i, V in enumerate(V_array):
+        current_trim_target = [throttle, V, alt]
+        _, _, _, ROC_fps, _, _ = climb_trim_at_speed(x0, current_trim_target, verbose=False)
+        ROC_array[i] = ROC_fps
+
+    i_max = int(np.argmax(ROC_array))
+    max_roc = ROC_array[i_max]
+    max_roc_speed = V_array[i_max]
+
+    if verbose:
+        print(f"\nMaximum ROC found at V = {max_roc_speed} ft/s with ROC = {max_roc} ft/s | {max_roc*60} ft/min")
+
+    return V_array, ROC_array, max_roc_speed, max_roc
+
+
 
 #%% 
 # Example: Level Flight

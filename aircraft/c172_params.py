@@ -1,6 +1,5 @@
 import numpy as np
 from utils import conversions
-from utils.standard_atmosphere import standard_atmosphere
 t0 = 0
 tf = 115
 dt = 0.01
@@ -16,8 +15,8 @@ params = {
     "I_yy": 1346.0,               # slug*ft^2
     "W": 2300.0,                  # lbf
 
-    "V_S": 45.0,                  # decide units and stay consistent
-    "V_ne": 170.0,                # decide units and stay consistent
+    "V_S": 45.0,          # stall speed in indicated knots
+    "V_ne": 170.0,        # never exceed speed in indicated knots
     "V_trim": 150,              # ft/s
     "gamma_trim": np.deg2rad(0.0),# rad
 
@@ -41,8 +40,5 @@ params = {
     "C_mq": -12.4,
 }
 
-_, T, _ = standard_atmosphere(alt_0)
 params["AR"] = params["bw"]**2 / params["S"]
-params["V_ne"] = conversions.ias2tas(conversions.kts2fps(params["V_ne"]), alt_0, T)
-params["V_S"] = conversions.ias2tas(conversions.kts2fps(params["V_S"]), alt_0, T)
 params["P_max_SL"] = conversions.hp2ftlbfps(params["P_max_SL"])
