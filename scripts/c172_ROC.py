@@ -37,27 +37,22 @@ alt_array = np.arange(min_alt, max_alt + 1000, 1000)  # Altitude array from 0 to
 ROC_alt_array = np.zeros_like(alt_array)  # To store max ROC at each altitude
 
 #%% Compute max ROC across altitudes
-for i in range(len(alt_array) ):
+for i in range(len(alt_array)):
     V_array, ROC_array, V_max_ROC, ROC_max = max_ROC(x0, trim_target, params, verbose=False)
     ROC_alt_array[i] = ROC_max
-    trim_target[2] = trim_target[2] + 1000  # Increase altitude by 1000 ft for next iteration
+    trim_target[2] = trim_target[2] + 1000
 
 
 #%% POH Data
-roc_poh = pd.read_csv(DATA_DIR / "c172_roc.csv",sep=",",engine="python",skipinitialspace=True) # read POH data
-
-print("\n", roc_poh)
+roc_poh = pd.read_csv(DATA_DIR / "c172_roc.csv", sep=",", engine="python", skipinitialspace=True)
 
 poh_roc_alt = roc_poh["press_alt_ft"]
-poh_roc_0C = roc_poh["fpm_0C"]
-poh_roc_M20C = roc_poh["fpm_M20C"]
 poh_roc_20C = roc_poh["fpm_20C"]
-poh_roc_40C = roc_poh["fpm_40C"]
 
 # Plot POH ROC vs Simulated ROC
 plt.figure(1)
 plt.plot(poh_roc_alt, poh_roc_20C, label="POH ROC", linewidth=1)
-plt.plot(alt_array, ROC_alt_array*60,label="Sim ROC", linewidth=1)
+plt.plot(alt_array, ROC_alt_array * 60, label="Sim ROC", linewidth=1)
 
 plt.title("Rate of Climb vs Altitude @ 20C")
 plt.xlabel("Altitude (ft)")
@@ -65,14 +60,4 @@ plt.ylabel("Rate of Climb (ft/min)")
 plt.legend()
 plt.grid()
 
-
-
-plt.figure(2)
-plt.plot(V_array, ROC_array*60, label="Rate of Climb (ft/min)", linewidth=1)
-plt.plot(V_max_ROC, ROC_max*60, 'ro', label="Max ROC", linewidth=1)
-plt.title("Rate of Climb vs Airspeed")
-plt.xlabel("Airspeed (ft/min)")
-plt.ylabel("Rate of Climb (ft/min)")
-plt.grid()
-plt.legend()
 plt.show()
