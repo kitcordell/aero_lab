@@ -83,4 +83,3 @@ def velocity_max(alt, throttle, params, x0):
     sol = least_squares(residual, x0)
     return sol.x[0]
 
-from aircraft.c172_params import params
