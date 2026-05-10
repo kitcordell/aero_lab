@@ -84,7 +84,7 @@ ax_speed_alt.plot(
     label="Estimated 75% Throttle",
 )
 ax_speed_alt.plot(poh_altitudes,poh_tas,color=AERO_COLORS["amber"],markeredgecolor=AERO_COLORS["text"],linestyle="--",label="POH Closest to 75% MCP",)
-ax_speed_alt.set_title("Maximum Airspeed vs Altitude")
+ax_speed_alt.set_title("TAS vs Altitude")
 ax_speed_alt.set_xlabel("Pressure Altitude (ft)")
 ax_speed_alt.set_ylabel("Maximum Airspeed (kt TAS)")
 ax_speed_alt.legend()
